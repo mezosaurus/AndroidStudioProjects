@@ -15,7 +15,7 @@ public class Board {
     private String[][] mBoard = {mLetters, mNumbers};
     private ArrayList<String> takenPositions = new ArrayList<String>();
     private ArrayList<Ship> mShips;
-    private ArrayList<Ship> shipsToPlace;
+    private ArrayList<Ship> shipsToPlace = new ArrayList<Ship>();
     private Ship mCarrier = new Ship(Ship.Type.CARRIER);
     private Ship mBattleship = new Ship(Ship.Type.BATTLESHIP);
     private Ship mSubmarine = new Ship(Ship.Type.SUBMARINE);
@@ -28,7 +28,12 @@ public class Board {
         placeShips(shipsToPlace);
     }
 
+    public ArrayList<Ship> getShips () {
+        return mShips;
+    }
+
     private void createShips() {
+        mShips = new ArrayList<Ship>();
         mShips.add(mCarrier);
         mShips.add(mBattleship);
         mShips.add(mSubmarine);
@@ -84,7 +89,7 @@ public class Board {
                 orientation = getRandomOrientation();
             }
         }
-        // If out of loop, ship has been placed
+        // If out of loop, ship has been placed, remove it from list
         shipsToPlace.remove(shipToPlace);
         // Place remaining ships
         placeShips(shipsToPlace);
