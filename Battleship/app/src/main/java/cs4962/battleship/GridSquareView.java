@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -15,10 +16,12 @@ public class GridSquareView extends View {
 
     // The grid square identifier with pattern [A-J][1-10]
     private String mPosition;
+    private String mLetterNumber;
+    private int mTextPos = 0;
 
     public GridSquareView(Context context, int height, int width) {
         super(context);
-        setPadding(10, 10, 10, 10);
+        setPadding(1, 1, 1, 1);
         setMinimumHeight(height);
         setMinimumWidth(width);
     }
@@ -27,20 +30,34 @@ public class GridSquareView extends View {
         return mPosition;
     }
 
+    public void setLetterNumber(String s) { mLetterNumber = s; }
+
     public void setPosition(String location) {
         mPosition = location;
     }
 
-    @Override
+    /*@Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.i("ONTOUCHSQUARE", mPosition+"TOUCHED");
         return true;
-    }
+    }*/
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Paint textPaint = new Paint();
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(75);
+        canvas.drawPaint(textPaint);
         drawBorder(canvas);
         drawSquare(canvas);
+
+        if (mPosition == "") {
+            int xPos = (getWidth() / 2) - (int)(textPaint.measureText(mLetterNumber)/2);
+            int yPos = (int) ((getHeight() / 2) - ((textPaint.descent() + textPaint.ascent()) / 2)) ;
+            canvas.drawText(mLetterNumber, xPos, yPos, textPaint);
+            mTextPos++;
+        }
     }
 
     @Override

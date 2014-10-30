@@ -12,7 +12,7 @@ public class Ship {
     private Type mType;
     private int mSize;
     // Ship position, format [A-J][1-10]
-    private String[] mPositions;
+    private ArrayList<String> mPositions;
     // List of hits on the ship, format [A-J][1-10], max number of hits is mSize
     private ArrayList<String> mHits;
     // Vertical or Horizontal
@@ -38,7 +38,7 @@ public class Ship {
                 mSize = 2;
                 break;
         }
-        mPositions = new String[mSize];
+        mPositions = new ArrayList<String>();
         mHits = new ArrayList<String>();
         mSunk = false;
     }
@@ -59,7 +59,7 @@ public class Ship {
         return mSize;
     }
 
-    public String[] getPositions() {
+    public ArrayList<String> getPositions() {
         return mPositions;
     }
 
@@ -67,7 +67,7 @@ public class Ship {
         return mHits;
     }
 
-    public void setPositions (String[] positions) {
+    public void setPositions (ArrayList<String> positions) {
         mPositions = positions;
     }
 
@@ -87,8 +87,8 @@ public class Ship {
     public boolean validatePosition (String position) {
         boolean validPosition = false;
 
-        for (int posIndex = 0; posIndex < mPositions.length; posIndex++) {
-            if (position == mPositions[posIndex]) {
+        for (int posIndex = 0; posIndex < mPositions.size(); posIndex++) {
+            if (position == mPositions.get(posIndex)) {
                 validPosition = true;
             }
         }

@@ -17,6 +17,7 @@ import android.view.ViewGroup;
  */
 public class GridView extends ViewGroup {
 
+    private Canvas mCanvas;
     public GridView (Context context) {
         super(context);
         setSaveEnabled(true);
@@ -79,7 +80,7 @@ public class GridView extends ViewGroup {
         int rowCount = 0;
 
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
-            View child = getChildAt(childIndex);
+            GridSquareView child = (GridSquareView)getChildAt(childIndex);
             Rect childLayout = new Rect();
 
             int childCenterX = layoutRect.left + ((childWidthMax / 2) + (childWidthMax * columnCount));
@@ -93,6 +94,9 @@ public class GridView extends ViewGroup {
             // Calculate new child layout params for next child
             // Increment left based on column count as we go down the row
             // Increment top based on row count as we go down the column
+            /*if (child.getPosition() != "") {
+                mCanvas.drawText(child.getPosition(), childCenterX, childCenterY, textPaint);
+        }*/
             if (columnCount == 10) {
                 columnCount = 0;
                 rowCount++;
@@ -106,7 +110,7 @@ public class GridView extends ViewGroup {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        /*Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.WHITE);
 
         RectF contentRect = new RectF();
@@ -115,7 +119,8 @@ public class GridView extends ViewGroup {
         contentRect.right = getWidth();
         contentRect.bottom = getHeight();
 
-        canvas.drawRect(contentRect, paint);
+        canvas.drawRect(contentRect, paint);*/
+        mCanvas = canvas;
         super.dispatchDraw(canvas);
     }
 
