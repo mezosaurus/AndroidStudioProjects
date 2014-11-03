@@ -72,7 +72,18 @@ public class Ship {
     }
 
     public boolean registerHit (String position) {
-        boolean retVal = false;
+        if (mPositions.contains(position)) {
+            mHits.add(position);
+            if (mHits.size() == mSize) {
+                mSunk = true;
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+        //return mPositions.contains(position);
+        /*boolean retVal = false;
         // Determine if the position selected is a valid position for the ship
         if (!validatePosition(position)) {
             return false;
@@ -81,18 +92,19 @@ public class Ship {
         else {
             retVal = validateHit(position);
         }
-        return retVal;
+        return retVal;*/
     }
 
     public boolean validatePosition (String position) {
-        boolean validPosition = false;
+        return mPositions.contains(position);
+        /*boolean validPosition = false;
 
         for (int posIndex = 0; posIndex < mPositions.size(); posIndex++) {
             if (position == mPositions.get(posIndex)) {
                 validPosition = true;
             }
         }
-        return validPosition;
+        return validPosition;*/
     }
 
     private boolean validateHit (String position) {

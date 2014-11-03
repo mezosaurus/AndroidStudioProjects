@@ -14,6 +14,8 @@ public class Player {
     private ArrayList<String> mHits;
     // Board for the player
     private Board mBoard;
+    // Boolean var to indicate if it is the player's turn or not
+    private boolean mTurn;
 
     public Player() {
         mActions = new ArrayList<String>();
@@ -22,33 +24,39 @@ public class Player {
         mBoard = new Board();
     }
 
-    public boolean launchMissile(String position, Player opponent) {
-        // Get opponent information
-        Board oppBoard = opponent.getBoard();
-        ArrayList<Ship> ships = oppBoard.getShips();
+    public void addMiss(String position) {
+        mMisses.add(position);
+        mActions.add(position);
+    }
 
-        // Make sure player hasn't already performed action on this position.
-        // If they have, return false.
-        if (mActions.contains(position)) {
-            return false;
-        }
-        // If they haven't, add the position to the actions list
-        else {
-            mActions.add(position);
-        }
+    public void addHit(String position) {
+        mHits.add(position);
+        mActions.add(position);
+    }
 
-        boolean hitSuccess = false;
+    public boolean isTurn () {
+        return mTurn;
+    }
+
+    public void setTurn(boolean turn) {
+        mTurn = turn;
+    }
+
+    public String launchMissile(String position) {
+        ArrayList<Ship> ships = mBoard.getShips();
+
         for (int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
-            hitSuccess = s.registerHit(position);
+            if (s.registerHit(position)) {
+                if (s.isSunk()) {
+                    return "SUNK" + s.getType().toString();
+                }
+                else {
+                    return "HIT";
+                }
+            }
         }
-        if (hitSuccess) {
-            mHits.add(position);
-        }
-        else {
-            mMisses.add(position);
-        }
-        return hitSuccess;
+        return "MISS";
     }
 
     public ArrayList<String> getActions() {

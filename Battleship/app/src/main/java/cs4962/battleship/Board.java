@@ -1,7 +1,5 @@
 package cs4962.battleship;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,7 +13,7 @@ public class Board {
     private String[] mNumbers = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
     private String[] mOrientations = { "VERTICAL", "HORIZONTAL" };
     private String[][] mBoard;
-    private ArrayList<String> takenPositions = new ArrayList<String>();
+    private ArrayList<String> shipPositions = new ArrayList<String>();
     private ArrayList<Ship> mShips;
     private ArrayList<Ship> shipsToPlace = new ArrayList<Ship>();
     private Ship mCarrier = new Ship(Ship.Type.CARRIER);
@@ -35,11 +33,15 @@ public class Board {
         return mShips;
     }
 
+    public ArrayList<String> getShipPositions() {
+        return shipPositions;
+    }
+
     private void initBoard() {
         mBoard = new String[10][10];
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                mBoard[i][j] = mLetters[j]+mNumbers[i];
+                mBoard[j][i] = mLetters[j]+mNumbers[i];
             }
         }
     }
@@ -62,16 +64,14 @@ public class Board {
         String number = getRandomNumber();
         String randomPosition = letter + number;
         // Keep looping until the randomPosition isn't taken
-        while (takenPositions.contains(randomPosition)) {
-            Log.i("PLACESHIPS", "position: " + randomPosition + " is taken");
+        while (shipPositions.contains(randomPosition)) {
             letter = getRandomLetter();
             number = getRandomNumber();
             randomPosition = letter + number;
         }
-        Log.i("PLACESHIPS", "random position: " + randomPosition);
         int size = shipToPlace.getSize();
-        Log.i("PLACESHIPS", "size of ship: " + size);
         String orientation = getRandomOrientation();
+        String placedOrientation = "";
         // Depending on random orientation, check to see if the ship can be placed
         boolean placed = false;
         while (!placed) {
@@ -81,6 +81,9 @@ public class Board {
                 if (!placed) {
                     placed = checkHorizontal(shipToPlace, size, letter, number);
                 }
+                else {
+                    placedOrientation = "VERTICAL";
+                }
             }
             else if (orientation == "HORIZONTAL") {
                 placed = checkHorizontal(shipToPlace, size, letter, number);
@@ -88,25 +91,31 @@ public class Board {
                 if (!placed) {
                     placed = checkVertical(shipToPlace, size, letter, number);
                 }
+                else {
+                    placedOrientation = "HORIZONTAL";
+                }
             }
             letter = getRandomLetter();
             number = getRandomNumber();
             orientation = getRandomOrientation();
         }
-        // If out of loop, ship has been placed, remove it from list
+        // If out of loop, ship has been placed
+        // Set ships orientation
+        shipToPlace.setOrientation(placedOrientation);
+        // Remove ship from list
         shipsToPlace.remove(shipToPlace);
         // Place remaining ships
         placeShips(shipsToPlace);
     }
 
     private boolean checkVertical (Ship ship, int size, String letter, String number) {
-        Log.i("CHECKVERTICAL", "position: " + letter + number);
         // Vertical means keep the letter the same, but increment number
         // get index of letter
         int letterIndex = 0;
         for (int i = 0; i < mLetters.length; i++) {
             if (mLetters[i] == letter) {
                 letterIndex = i;
+                break;
             }
         }
         // get index of number
@@ -114,9 +123,9 @@ public class Board {
         for (int i = 0; i < mNumbers.length; i++) {
             if (mNumbers[i] == number) {
                 numberIndex = i;
+                break;
             }
         }
-        //Log.i("CHECKVERTCIAL", "number index: " + numberIndex);
         // Determine if numberIndex + size is greater than mNumbers length.
         // If it is, placement in vertical orientation is impossible
         if (numberIndex + size > mNumbers.length) {
@@ -124,33 +133,23 @@ public class Board {
         }
 
         boolean roomForShip = true;
-        ArrayList<String> shipPositions = new ArrayList<String>();
-        // Add current position since it has been checked for availability
-        //shipPositions.add(letter+number);
+        ArrayList<String> posArray = new ArrayList<String>();
+
         // Now we are sure there is enough room for the ship in the vertical direction, see if any
         // spots are taken below
         for (int i = 0; i < size; i++) {
-            String position = mBoard[letterIndex][i];
-            if (takenPositions.contains(position)) {
+            String position = mBoard[letterIndex][numberIndex+i];
+            if (shipPositions.contains(position)) {
                 roomForShip = false;
             }
             else {
-                shipPositions.add(position);
+                posArray.add(position);
             }
         }
-        /*for (int i = numberIndex; i < mNumbers.length; i++) {
-            String position = mBoard[letterIndex][i];
-            //Log.i("CHECKVERTICAL", "board position: " + position);
-            if (takenPositions.contains(position)) {
-                roomForShip = false;
-            }
-            else {
-                shipPositions.add(position);
-            }
-        }*/
+
         if (roomForShip) {
-            takenPositions.addAll(shipPositions);
-            ship.setPositions(shipPositions);
+            shipPositions.addAll(posArray);
+            ship.setPositions(posArray);
             return true;
         }
         else {
@@ -159,7 +158,6 @@ public class Board {
     }
 
     private boolean checkHorizontal(Ship ship, int size, String letter, String number) {
-        Log.i("CHECKHORIZONTAL", "position: " + letter + number);
         // Horizontal means keep number the same, increment letter
         // get index of letter
         int letterIndex = 0;
@@ -168,7 +166,6 @@ public class Board {
                 letterIndex = i;
             }
         }
-        //Log.i("CHECKHORIZONTAL", "letter index: " + letterIndex);
         // get index of number
         int numberIndex = 0;
         for (int i = 0; i < mNumbers.length; i++) {
@@ -179,29 +176,24 @@ public class Board {
         // Determine if letterIndex + size is greater than mLetters length.
         // If it is, placement in horizontal orientation is impossible
         if (letterIndex + size > mLetters.length) {
-            //Log.i("CHECKHORIZONTAL", "letterIndex+1+size = " + letterIndex+1+size);
             return false;
         }
 
         boolean roomForShip = true;
-        ArrayList<String> shipPositions = new ArrayList<String>();
-        // Add current position since it has been checked for availability
-        //shipPositions.add(letter+number);
-        // Now we are sure there is enough room for the ship in the horizontal direction, see if any
-        // spots are taken to the right
-        for (int i = letterIndex; i < mLetters.length; i++) {
-            String position = mBoard[i][numberIndex];
-            //Log.i("CHECKHORIZONTAL", "board position: " + position);
-            if (takenPositions.contains(position)) {
+        ArrayList<String> posArray = new ArrayList<String>();
+
+        for (int i = 0; i < size; i++) {
+            String position = mBoard[letterIndex+i][numberIndex];
+            if (shipPositions.contains(position)) {
                 roomForShip = false;
             }
             else {
-                shipPositions.add(position);
+                posArray.add(position);
             }
         }
         if (roomForShip) {
-            takenPositions.addAll(shipPositions);
-            ship.setPositions(shipPositions);
+            shipPositions.addAll(posArray);
+            ship.setPositions(posArray);
             return true;
         }
         else {

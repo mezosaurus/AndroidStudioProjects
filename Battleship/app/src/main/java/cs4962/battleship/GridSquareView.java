@@ -17,6 +17,7 @@ public class GridSquareView extends View {
     // The grid square identifier with pattern [A-J][1-10]
     private String mPosition;
     private String mLetterNumber;
+    private int mColor;
     private int mTextPos = 0;
 
     public GridSquareView(Context context, int height, int width) {
@@ -24,10 +25,19 @@ public class GridSquareView extends View {
         setPadding(1, 1, 1, 1);
         setMinimumHeight(height);
         setMinimumWidth(width);
+        mColor = Color.BLUE;
     }
 
     public String getPosition() {
         return mPosition;
+    }
+
+    public void setColor(int color) {
+        mColor = color;
+    }
+
+    public int getColor() {
+        return mColor;
     }
 
     public void setLetterNumber(String s) { mLetterNumber = s; }
@@ -47,7 +57,7 @@ public class GridSquareView extends View {
         super.onDraw(canvas);
         Paint textPaint = new Paint();
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(75);
+        textPaint.setTextSize(getHeight());
         canvas.drawPaint(textPaint);
         drawBorder(canvas);
         drawSquare(canvas);
@@ -98,7 +108,7 @@ public class GridSquareView extends View {
 
     private void drawSquare(Canvas canvas) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.BLUE);
+        paint.setColor(mColor);
 
         RectF rect = new RectF();
         rect.left = getPaddingLeft();

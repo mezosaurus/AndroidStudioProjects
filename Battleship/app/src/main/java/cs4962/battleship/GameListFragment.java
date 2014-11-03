@@ -22,14 +22,22 @@ import java.util.UUID;
  */
 public class GameListFragment extends Fragment implements ListAdapter {
 
-    ArrayList<UUID> mGameIdentifiersByDate = null;
+    private ArrayList<UUID> mGameIdentifiersByDate = null;
+    private ListView mListView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ListView gameListView = new ListView(getActivity());
-        gameListView.setAdapter(this);
+        mListView = new ListView(getActivity());
+        mListView.setAdapter(this);
 
-        gameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        GameList.getInstance().setGameListChange(new GameList.OnGameListChanged() {
+            @Override
+            public void onGameListChanged() {
+                mListView.invalidateViews();
+            }
+        });
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 UUID gameIdentifier = mGameIdentifiersByDate.get(position);
@@ -40,7 +48,11 @@ public class GameListFragment extends Fragment implements ListAdapter {
             }
         });
 
-        return gameListView;
+        return mListView;
+    }
+
+    public void refresh() {
+        mListView.invalidateViews();
     }
 
     public interface OnGameSelectedListener {
@@ -65,11 +77,11 @@ public class GameListFragment extends Fragment implements ListAdapter {
     @Override
     public int getCount() {
         if (mGameIdentifiersByDate == null) {
-            Set<UUID> gameIdentifiers = GameList.getInstance().getIdentifiers();
             mGameIdentifiersByDate = new ArrayList<UUID>();
-            mGameIdentifiersByDate.addAll(gameIdentifiers);
-            Collections.sort(mGameIdentifiersByDate);
         }
+        Set<UUID> gameIdentifiers = GameList.getInstance().getIdentifiers();
+        mGameIdentifiersByDate.addAll(gameIdentifiers);
+        Collections.sort(mGameIdentifiersByDate);
         return GameList.getInstance().getIdentifiers().size();
     }
 
@@ -80,7 +92,6 @@ public class GameListFragment extends Fragment implements ListAdapter {
 
     @Override
     public Object getItem(int position) {
-
         return mGameIdentifiersByDate.get(position);
     }
 
@@ -103,9 +114,25 @@ public class GameListFragment extends Fragment implements ListAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         UUID gameIdentifier = mGameIdentifiersByDate.get((int) getItemId(position));
         Game game = GameList.getInstance().getGame(gameIdentifier);
+        String itemTitleString = "";
+        if (game.inProgress()) {
+            itemTitleString += "IN PROGRESS\n";
+            if (game.getPlayerOne().isTurn()) {
+                itemTitleString += "P1 TURN\n";
+            }
+            else {
+                itemTitleString += "P2 TURN\n";
+            }
+        }
+        else {
+            itemTitleString += "FINISHED\n";
+        }
+
+        itemTitleString += "P1 LAUNCHED: " + game.getPlayerOne().getActions().size() + "\n";
+        itemTitleString += "P2 LAUNCHED: " + game.getPlayerTwo().getActions().size();
 
         TextView gameTitleView = new TextView(getActivity());
-        gameTitleView.setText(game.date.toString());
+        gameTitleView.setText(itemTitleString);
         return gameTitleView;
     }
 
@@ -124,10 +151,4 @@ public class GameListFragment extends Fragment implements ListAdapter {
 
     @Override
     public void unregisterDataSetObserver(DataSetObserver observer) {}
-
-
-
-
-
-
 }
