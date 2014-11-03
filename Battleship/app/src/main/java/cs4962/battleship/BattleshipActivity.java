@@ -57,10 +57,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 Game newGame = new Game();
                 newGame.setInProgress(true);
                 newGame.setDate(new Date());
-                newGame.setPlayerOne(new Player());
-                newGame.getPlayerOne().setTurn(true);
-                newGame.setPlayerTwo(new Player());
-                newGame.getPlayerTwo().setTurn(false);
                 /*newGame.inProgress = true;
                 newGame.date = new Date();
                 newGame.playerOne = new Player();
@@ -233,6 +229,7 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
             fragmentOne.resetFragment();
             alertMsg += "Please pass to PLAYER 1 for their turn";
         }
+        GameList.getInstance().saveGameList(GameList.getGameListFile());
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {

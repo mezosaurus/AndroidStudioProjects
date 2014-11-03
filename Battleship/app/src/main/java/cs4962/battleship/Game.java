@@ -14,7 +14,10 @@ public class Game {
     private Date date;
 
     public Game() {
-
+        playerOne = new Player();
+        playerOne.setTurn(true);
+        playerTwo = new Player();
+        playerTwo.setTurn(false);
     }
 
     public UUID getIdentifier() {
@@ -29,10 +32,6 @@ public class Game {
         return playerOne;
     }
 
-    public void setPlayerOne(Player playerOne) {
-        this.playerOne = playerOne;
-    }
-
     public boolean inProgress() {
         return inProgress;
     }
@@ -43,10 +42,6 @@ public class Game {
 
     public Player getPlayerTwo() {
         return playerTwo;
-    }
-
-    public void setPlayerTwo(Player playerTwo) {
-        this.playerTwo = playerTwo;
     }
 
     public Date getDate() {

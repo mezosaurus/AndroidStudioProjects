@@ -67,8 +67,6 @@ public class GameList {
     }
 
     public void addGame(Game game) {
-        if (game.getPlayerOne() == null || game.getPlayerTwo()== null)
-            return;
         UUID identifier = UUID.randomUUID();
         game.setIdentifier(identifier);
         mGameList.put(identifier, game);
