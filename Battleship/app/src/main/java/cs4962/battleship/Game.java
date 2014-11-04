@@ -9,6 +9,7 @@ import java.util.UUID;
 public class Game {
     private UUID identifier;
     private Player playerOne;
+    private Player winner;
     private Player playerTwo;
     private boolean inProgress;
     private Date date;
@@ -18,6 +19,24 @@ public class Game {
         playerOne.setTurn(true);
         playerTwo = new Player();
         playerTwo.setTurn(false);
+    }
+
+    public void setWinner(int player) {
+        if (player == 1) {
+            winner = playerOne;
+        }
+        else if (player == 2) {
+            winner = playerTwo;
+        }
+    }
+
+    public int getWinner() {
+        if (winner.equals(playerOne)) {
+            return 1;
+        }
+        else {
+            return 2;
+        }
     }
 
     public UUID getIdentifier() {

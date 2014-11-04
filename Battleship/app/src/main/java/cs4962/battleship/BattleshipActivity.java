@@ -127,7 +127,9 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 //Player p2 = mGame.playerTwo;
 
                 GridFragment fragmentOne = (GridFragment)getFragmentManager().findFragmentById(21);
+                fragmentOne.resetFragment();
                 GridFragment fragmentTwo = (GridFragment)getFragmentManager().findFragmentById(22);
+                fragmentTwo.resetFragment();
 
                 if (p1.isTurn()) {
                     fragmentOne.setGridViewPlayer(p1);
@@ -146,6 +148,8 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
     @Override
     public void onSquareClicked(GridSquareView actionView) {
         if (mGame == null)
+            return;
+        if (!mGame.inProgress())
             return;
         // User selected a grid square
         GameListFragment listFragment = (GameListFragment)getFragmentManager().findFragmentById(20);
@@ -173,8 +177,16 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 actionView.setColor(Color.RED);
                 // Add the hit to player 1
                 p1.addHit(position);
+
                 alertMsg += "PLAYER 1's turn resulted in a HIT at " + position + "\n\n";
                 alertMsg += "PLAYER 1 SUNK PLAYER 2's " + actionMsg.substring(4) + "\n\n";
+                if (p2.getSunkShips() == 5) {
+                    mGame.setInProgress(false);
+                    mGame.setWinner(1);
+                    actionView.invalidate();
+                    endGame();
+                    return;
+                }
             }
             else if (actionMsg == "HIT") {
                 // Update the clicked board with a hit
@@ -206,9 +218,16 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 // Update the clicked board with a hit
                 actionView.setColor(Color.RED);
                 // Add the hit to player 1
-                p1.addHit(position);
+                p2.addHit(position);
                 alertMsg += "PLAYER 2's turn resulted in a HIT at " + position + "\n\n";
                 alertMsg += "PLAYER 2 SUNK PLAYER 1's " + actionMsg.substring(4) + "\n\n";
+                if (p1.getSunkShips() == 5) {
+                    mGame.setInProgress(false);
+                    mGame.setWinner(2);
+                    actionView.invalidate();
+                    endGame();
+                    return;
+                }
             }
             else if (actionMsg == "HIT") {
                 // Update the clicked board with a hit
@@ -229,12 +248,13 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
             fragmentOne.resetFragment();
             alertMsg += "Please pass to PLAYER 1 for their turn";
         }
-        GameList.getInstance().saveGameList(GameList.getGameListFile());
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked OK button
+                GameListFragment listFragment = (GameListFragment)getFragmentManager().findFragmentById(20);
                 GridFragment fragmentOne = (GridFragment)getFragmentManager().findFragmentById(21);
                 GridFragment fragmentTwo = (GridFragment)getFragmentManager().findFragmentById(22);
                 Player p1 = mGame.getPlayerOne();
@@ -267,6 +287,8 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                     // Draw hits and misses
                     fragmentTwo.drawHitsMisses();
                 }
+                GameList.getInstance().saveGameList(GameList.getGameListFile());
+                listFragment.refresh();
                 dialog.dismiss();
             }
         });
@@ -274,6 +296,32 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
         builder.setMessage(alertMsg)
                 .setTitle("Results");
 
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    private void endGame() {
+        int winner = mGame.getWinner();
+        String endMsg = "";
+        if (winner == 1) {
+            // player 1 won
+            endMsg += "GAME OVER\n\nPLAYER 1 WON\n\n";
+        }
+        else {
+            // player 2 won
+            endMsg += "GAME OVER\n\nPLAYER 2 WON\n\n";
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                GameListFragment listFragment = (GameListFragment)getFragmentManager().findFragmentById(20);
+                GridFragment fragmentTwo = (GridFragment)getFragmentManager().findFragmentById(22);
+                listFragment.refresh();
+                dialog.dismiss();
+            }
+        });
+        builder.setMessage(endMsg)
+                .setTitle("GAME OVER");
         AlertDialog dialog = builder.create();
         dialog.show();
     }

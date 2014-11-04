@@ -1,7 +1,5 @@
 package cs4962.battleship;
 
-import android.app.Activity;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

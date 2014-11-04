@@ -16,6 +16,8 @@ public class Player {
     private Board mBoard;
     // Boolean var to indicate if it is the player's turn or not
     private boolean mTurn;
+    // Counter to determine number of sunk ships
+    private int mSunkShips = 0;
 
     public Player() {
         mActions = new ArrayList<String>();
@@ -34,6 +36,10 @@ public class Player {
         mActions.add(position);
     }
 
+    public int getSunkShips() {
+        return mSunkShips;
+    }
+
     public boolean isTurn () {
         return mTurn;
     }
@@ -49,6 +55,7 @@ public class Player {
             Ship s = ships.get(i);
             if (s.registerHit(position)) {
                 if (s.isSunk()) {
+                    mSunkShips++;
                     return "SUNK" + s.getType().toString();
                 }
                 else {

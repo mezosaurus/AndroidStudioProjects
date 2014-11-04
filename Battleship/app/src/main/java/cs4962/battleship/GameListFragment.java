@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -80,10 +81,18 @@ public class GameListFragment extends Fragment implements ListAdapter {
     public int getCount() {
         if (mGameIdentifiersByDate == null) {
             mGameIdentifiersByDate = new ArrayList<UUID>();
+            Set<UUID> gameIdentifiers = GameList.getInstance().getIdentifiers();
+           mGameIdentifiersByDate.addAll(gameIdentifiers);
+            // Sort by date
+            Collections.sort(mGameIdentifiersByDate, new Comparator<UUID>() {
+                public int compare (UUID one, UUID two) {
+                    Date d1 = GameList.getInstance().getGame(one).getDate();
+                    Date d2 = GameList.getInstance().getGame(two).getDate();
+                    // newest date first
+                    return d2.compareTo(d1);
+                }
+            });
         }
-        Set<UUID> gameIdentifiers = GameList.getInstance().getIdentifiers();
-        mGameIdentifiersByDate.addAll(gameIdentifiers);
-        Collections.sort(mGameIdentifiersByDate);
         return GameList.getInstance().getIdentifiers().size();
     }
 
@@ -114,6 +123,8 @@ public class GameListFragment extends Fragment implements ListAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        mGameIdentifiersByDate.clear();
+        mGameIdentifiersByDate.addAll(GameList.getInstance().getIdentifiers());
         UUID gameIdentifier = mGameIdentifiersByDate.get((int) getItemId(position));
         Game game = GameList.getInstance().getGame(gameIdentifier);
         String itemTitleString = "";
