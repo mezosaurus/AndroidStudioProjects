@@ -134,13 +134,17 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 if (p1.isTurn()) {
                     fragmentOne.setGridViewPlayer(p1);
                     fragmentTwo.setGridViewPlayer(p1);
+                    fragmentOne.drawShips();
+                    fragmentTwo.drawHitsMisses(p1);
+                    fragmentOne.drawHitsMisses(p2);
                 }
                 else {
                     fragmentOne.setGridViewPlayer(p2);
                     fragmentTwo.setGridViewPlayer(p2);
+                    fragmentOne.drawShips();
+                    fragmentTwo.drawHitsMisses(p2);
+                    fragmentOne.drawHitsMisses(p1);
                 }
-                fragmentOne.drawShips();
-                fragmentTwo.drawHitsMisses();
             }
         });
     }
@@ -272,7 +276,8 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                     // Draw ships
                     fragmentOne.drawShips();
                     // Draw hits and misses
-                    fragmentTwo.drawHitsMisses();
+                    fragmentTwo.drawHitsMisses(p2);
+                    fragmentOne.drawHitsMisses(p1);
                 }
                 else {
                     p2.setTurn(false);
@@ -285,7 +290,8 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                     // Draw ships
                     fragmentOne.drawShips();
                     // Draw hits and misses
-                    fragmentTwo.drawHitsMisses();
+                    fragmentTwo.drawHitsMisses(p1);
+                    fragmentOne.drawHitsMisses(p2);
                 }
                 GameList.getInstance().saveGameList(GameList.getGameListFile());
                 listFragment.refresh();

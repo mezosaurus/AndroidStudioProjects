@@ -133,9 +133,9 @@ public class GridFragment extends Fragment {
         }
     }
 
-    public void drawHitsMisses() {
-        ArrayList<String> hits = mPlayer.getHits();
-        ArrayList<String> misses = mPlayer.getMisses();
+    public void drawHitsMisses(Player player) {
+        ArrayList<String> hits = player.getHits();
+        ArrayList<String> misses = player.getMisses();
 
         // Draw hits
         for (int i = 0; i < hits.size(); i++) {
