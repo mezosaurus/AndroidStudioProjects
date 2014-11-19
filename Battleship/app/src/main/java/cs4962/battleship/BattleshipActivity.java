@@ -113,7 +113,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
         addTransaction.add(22, gridFragmentTwo);
         addTransaction.commit();
 
-
         gameListFragment.setOnGameSelectedListener(new GameListFragment.OnGameSelectedListener() {
             @Override
             public void onGameSelected(GameListFragment gameListFragment, UUID identifier) {

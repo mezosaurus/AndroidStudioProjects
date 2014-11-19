@@ -1,4 +1,4 @@
-package cs4962.teach;
+package cs4962.battleshipnetwork;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
