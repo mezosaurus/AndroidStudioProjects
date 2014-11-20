@@ -45,11 +45,7 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
         super.onCreate(savedInstanceState);
 
         waitingForPlayerBuilder = new AlertDialog.Builder(this);
-        //waitingForPlayerBuilder.setMessage("Waiting for player to join the game.");
-        //waitingForPlayerBuilder.setTitle("WAITING FOR PLAYER");
         waitingForPlayerDialog = waitingForPlayerBuilder.create();
-
-        //GameList.getInstance().setGameListFile(new File(getFilesDir(), "GameList.txt"));
 
         LinearLayout rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -144,10 +140,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 mGame = GameList.getInstance().getGame(identifier);
                 // Prompt user for player name
                 getPlayerName();
-
-                if (mPlayerName == null) {
-                    return;
-                }
             }
         });
     }
@@ -156,20 +148,15 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
     public void onSquareClicked(GridSquareView actionView) {
         // User selected a grid square
         if (mGame == null) {
-            System.out.println("GAME NULL IN ONSQUARECLICKED");
             return;
         }
         if (mGame.getStatus() != BattleshipServices.GameStatus.PLAYING) {
-            System.out.println("GAME NOT IN PLAYING STATUS IN ONSQUARECLICKED");
             return;
         }
 
         String position = actionView.getPosition();
-        System.out.println("SQUARE CLICKED AT " + position);
         String letter = position.substring(0, 1);
-        System.out.println(letter);
         String number = position.substring(1);
-        System.out.println(number);
         // get index of letter
         for (int i = 0; i < mLetters.length; i++) {
             if (mLetters[i].equals(letter)) {
@@ -177,7 +164,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 break;
             }
         }
-        System.out.println("LETTER INDEX: " + mLetterIndex);
         // get index of number
         int numberIndex = 0;
         for (int i = 0; i < mNumbers.length; i++) {
@@ -186,8 +172,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 break;
             }
         }
-
-        System.out.println("NUMBER INDEX: " + mLetterIndex);
         //determineTurn();
         makeGuess();
     }
@@ -396,7 +380,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
         AsyncTask<String, Integer, BattleshipServices.Guess> makeGuessTask = new AsyncTask<String, Integer, BattleshipServices.Guess>() {
             @Override
             protected BattleshipServices.Guess doInBackground(String... params) {
-                System.out.println("MAKING GUESS AT [" + mLetterIndex + "," + mNumberIndex +"]");
                 return BattleshipServices.makeGuess(mGame.getIdentifier(), mPlayerId, mLetterIndex, mNumberIndex);
             }
 
@@ -405,6 +388,8 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 if (guess == null)
                     return;
                 super.onPostExecute(guess);
+
+                determineTurn();
 
                 String alertMsg = "";
                 boolean hitSuccess = guess.hit;
@@ -439,27 +424,14 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                         break;
                 }
 
-                // Update fragment views
-                GameListFragment listFragment = (GameListFragment)getFragmentManager().findFragmentById(20);
-                GridFragment fragmentOne = (GridFragment)getFragmentManager().findFragmentById(21);
-                GridFragment fragmentTwo = (GridFragment)getFragmentManager().findFragmentById(22);
-                fragmentOne.drawShips();
-                if (mGame.getPlayerOne().getName().equals(mPlayerName)) {
-                    fragmentOne.drawHitsMisses(mGame.getPlayerOne());
-                    fragmentTwo.drawHitsMisses(mGame.getPlayerTwo());
-                }
-                else {
-                    fragmentOne.drawHitsMisses(mGame.getPlayerTwo());
-                    fragmentTwo.drawHitsMisses(mGame.getPlayerOne());
-                }
-
                 // Create alert dialog for guess results
                 AlertDialog.Builder builder = new AlertDialog.Builder(BattleshipActivity.this);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         GameList.getInstance().refreshGameList();
                         getBoard();
-                        mIsTurn = false;
+                        //mIsTurn = false;
+                        dialogMessage = "Waiting for opponent to take their turn.";
                         callIsTurnService();
                         dialog.dismiss();
                     }
@@ -493,6 +465,7 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
                 String winner = turn.winner;
                 if (!winner.equals("IN PROGRESS")) {
                     mGame.setWinner(new Player(winner));
+                    mGame.setStatus(BattleshipServices.GameStatus.DONE);
                     String endMsg = "";
                     if (winner.equals(mPlayerName)) {
                         // PLAYER WON
@@ -542,7 +515,6 @@ public class BattleshipActivity extends Activity implements GridFragment.OnSquar
     private Runnable checkForNewPlayer = new Runnable() {
 
         public void run() {
-
             if (!mIsTurn) {
                 // Inform player that the new game is waiting for a player to join
                 waitingForPlayerDialog.setMessage(dialogMessage);
