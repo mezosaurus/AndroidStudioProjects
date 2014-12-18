@@ -107,17 +107,17 @@ public class Game {
     }
 
     private void initBoard() {
-        AreaCard hermit = new AreaCard("HERMITCABIN");
+        AreaCard hermit = new AreaCard("Hermit's Cabin");
         mBoard.add(hermit);
-        AreaCard underworld = new AreaCard("UNDERWORLDGATE");
+        AreaCard underworld = new AreaCard("Underworld Gate");
         mBoard.add(underworld);
-        AreaCard church = new AreaCard("CHURCH");
+        AreaCard church = new AreaCard("Church");
         mBoard.add(church);
-        AreaCard cemetery = new AreaCard("CEMETERY");
+        AreaCard cemetery = new AreaCard("Cemetery");
         mBoard.add(cemetery);
-        AreaCard woods = new AreaCard("WEIRDWOODS");
+        AreaCard woods = new AreaCard("Weird Woods");
         mBoard.add(woods);
-        AreaCard altar = new AreaCard("ERSTWHILEALTAR");
+        AreaCard altar = new AreaCard("Erstwhile Altar");
         mBoard.add(altar);
         // Randomly assign area card positions on board
         Collections.shuffle(mBoard);
@@ -334,17 +334,17 @@ public class Game {
             }
         }
         else {
+            // Push on start player
+            mPlayers.push(temp.get(index));
             // Push all players before start player into queue going backwards through list
             for (int i = index-1; i >= 0; i--) {
                 mPlayers.push(temp.get(i));
             }
             // Push all players after start player into queue going backwards through list
-            for (int i = temp.size(); i > index; i--) {
+            for (int i = temp.size()-1; i > index; i--) {
                 Player p = temp.get(i);
                 mPlayers.push(temp.get(i));
             }
-            // Push on start player
-            mPlayers.push(temp.get(index));
         }
 
         saveGame(mGameFile);

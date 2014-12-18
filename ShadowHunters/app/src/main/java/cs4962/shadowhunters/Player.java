@@ -12,11 +12,9 @@ import java.util.UUID;
  * Created by Ethan on 12/3/2014.
  */
 public class Player implements Parcelable{
-    //private UUID pid;
     private String name;
     private Character character;
-    private ArrayList<WhiteCard> whiteEquipment;
-    private ArrayList<BlackCard> blackEquipment;
+    private ArrayList<Card> equipment = new ArrayList<Card>();
     private boolean turn;
     private int color;
     private AreaCard boardPosition;
@@ -112,6 +110,14 @@ public class Player implements Parcelable{
 
     public void setDamage(int damage) {
         this.damage = damage;
+    }
+
+    public ArrayList<Card> getEquipment() {
+        return equipment;
+    }
+
+    public void setEquipment(ArrayList<Card> equipment) {
+        this.equipment = equipment;
     }
 
     public int getColor() {

@@ -30,8 +30,7 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
         View row = convertView;
         PlayerHolder holder = null;
 
-        if(row == null)
-        {
+        if(row == null) {
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             row = inflater.inflate(layoutResourceId, parent, false);
 
@@ -41,8 +40,7 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 
             row.setTag(holder);
         }
-        else
-        {
+        else {
             holder = (PlayerHolder)row.getTag();
         }
 
@@ -63,6 +61,8 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
             title += " REVEALED AS : " + player.getCharacter().getName() + " (" + player.getCharacter().getTeam() + ")";
             content += "\nHEALTH: " + player.getCharacter().getHealth();
         }
+        int equipmentCount = player.getEquipment().size();
+        content += "EQUIPMENT COUNT : " + equipmentCount;
 
         holder.txtTitle.setText(title);
         holder.txtContent.setText(content);

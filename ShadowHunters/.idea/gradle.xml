@@ -13,6 +13,7 @@
         </option>
       </GradleProjectSettings>
     </option>
+    <option name="gradleVmOptions" value="-Dhttp.proxyHost=proxylp.ihc.com-Dhttp.proxyPort=8080 -Dhttp.proxyUser=ehayes1 -Dhttp.proxyPassword=a4d1ngton1" />
   </component>
 </project>
 

@@ -9,18 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <Button android:id="@+id/turnMoveBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Move"/>
-    <Button android:id="@+id/turnActionBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Area Card Action (Optional)"/>
-    <Button android:id="@+id/turnAttackBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Attack (Optional)"/>
+
 
     <TextView android:id="@+id/turnResultTextView"
         android:layout_width="wrap_content"
