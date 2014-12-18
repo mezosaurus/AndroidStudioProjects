@@ -32,6 +32,7 @@ public class RootActivity extends Activity {
         lightSwitch = new Switch(this);
         LinearLayout.LayoutParams lightSwitchLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 30);
         lightSwitchLayoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+
         rootLayout.addView(lightSwitch, lightSwitchLayoutParams);
 
         lightSwitch.setOnClickListener(new View.OnClickListener() {
