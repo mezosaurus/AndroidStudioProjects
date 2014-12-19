@@ -41,6 +41,7 @@ public class GameBoardActivity extends Activity {
     static final int PLAYER_ATTACK_REQUEST = 10;
     static final int CARD_REQUEST = 11;
     static final int WEIRDWOODS_ATTACK_REQUEST = 12;
+    static final int WEIRDWOODS_HEAL_REQUEST = 13;
     private ArrayList<AreaCard> mGroupOne = new ArrayList<AreaCard>();
     private ArrayList<AreaCard> mGroupTwo = new ArrayList<AreaCard>();
     private ArrayList<AreaCard> mGroupThree = new ArrayList<AreaCard>();
@@ -579,7 +580,7 @@ public class GameBoardActivity extends Activity {
                 @Override
                 public void onClick(View view) {
                     Intent healIntent = new Intent(GameBoardActivity.this, PlayerListActivity.class);
-                    healIntent.putExtra("action", "heal");
+                    healIntent.putExtra("weirdwoods", "heal");
                     healIntent.putExtra("amount", 1);
                 }
             });
@@ -588,7 +589,7 @@ public class GameBoardActivity extends Activity {
                 @Override
                 public void onClick(View view) {
                     Intent dmgIntent = new Intent(GameBoardActivity.this, PlayerListActivity.class);
-                    dmgIntent.putExtra("weirdwoods", true);
+                    dmgIntent.putExtra("weirdwoods", "damage");
                     dmgIntent.putExtra("amount", 2);
                     startActivityForResult(dmgIntent, WEIRDWOODS_ATTACK_REQUEST);
                 }
@@ -712,6 +713,40 @@ public class GameBoardActivity extends Activity {
                     playerDead(team);
                 }
                 attackedPlayer.setDamage(damage);
+                pListPlayer.setDamage(damage);
+                PlayerList.getInstance().savePlayerList(new File(getFilesDir(), "PlayerList.txt"));
+
+                builder.setView(test);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mMoved = false;
+                        saveTurn();
+                        //GameBoardActivity.this.findViewById(R.id.damageLinearLayout).invalidate();
+                        buildDamageGui();
+                        dialog.dismiss();
+                        //endTurn();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        }
+        if (requestCode == WEIRDWOODS_HEAL_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Player healedPlayer = data.getParcelableExtra("playerToHeal");
+                Player pListPlayer = PlayerList.getInstance().getPlayer(healedPlayer.getColor());
+                int healAmount = data.getIntExtra("healAmount", 1);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                TextView test = new TextView(this);
+
+                test.setText("Successfully healed " + healedPlayer.getName() + " for " + healAmount);
+                builder.setTitle("Heal Success");
+                int damage = healedPlayer.getDamage() - healAmount;
+                if (damage < 0) {
+                    damage = 0;
+                }
+                healedPlayer.setDamage(damage);
                 pListPlayer.setDamage(damage);
                 PlayerList.getInstance().savePlayerList(new File(getFilesDir(), "PlayerList.txt"));
 

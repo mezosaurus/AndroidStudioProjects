@@ -17,20 +17,33 @@ import java.util.UUID;
 
 
 public class PlayerListActivity extends Activity {
-    private boolean mAttack;
-    private boolean mWoods;
-    private int mWoodsDmg;
+    private boolean mAttack = false;
+    private boolean mWoodsHeal = false;
+    private boolean mWoodsDmg = false;
+    private int mWoodsAmount = 0;
+    private boolean mCard = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player_list);
 
         Intent i = getIntent();
-        mAttack = i.getBooleanExtra("attack", false);
-        mWoods = i.getBooleanExtra("weirdwoods", false);
-        if (mWoods) {
-            mWoodsDmg = i.getIntExtra("amount", 0);
+        if (i.hasExtra("attack"))
+            mAttack = i.getBooleanExtra("attack", false);
+        if (i.hasExtra("weirdwoods")) {
+            String woods = i.getStringExtra("weirdwoods");
+            if (woods.equals("heal")) {
+                mWoodsHeal = true;
+            }
+            else {
+                mWoodsDmg = true;
+            }
+            mWoodsAmount = i.getIntExtra("amount", 0);
         }
+        if (i.hasExtra("cardrequest")) {
+            mCard = i.getBooleanExtra("cardrequest", false);
+        }
+
 
         PlayerList pList = PlayerList.getInstance();
         Set<Integer> playerIds = pList.getIdentifiers();
@@ -53,9 +66,20 @@ public class PlayerListActivity extends Activity {
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }
-                if (mWoods) {
+                else if (mWoodsHeal) {
                     resultIntent.putExtra("playerToAttack", p);
-                    resultIntent.putExtra("dmgAmount", mWoodsDmg);
+                    resultIntent.putExtra("dmgAmount", mWoodsAmount);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                }
+                else if (mWoodsDmg) {
+                    resultIntent.putExtra("playerToHeal", p);
+                    resultIntent.putExtra("healAmount", mWoodsAmount);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                }
+                else if (mCard) {
+                    resultIntent.putExtra("playerSelected", p);
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }
@@ -68,11 +92,7 @@ public class PlayerListActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent resultIntent = new Intent(PlayerListActivity.this, GameBoardActivity.class);
-                if (mAttack) {
-                    setResult(RESULT_CANCELED, resultIntent);
-                    finish();
-                }
-                else if (mWoods) {
+                if (mAttack || mWoodsHeal || mWoodsDmg || mCard) {
                     setResult(RESULT_CANCELED, resultIntent);
                     finish();
                 }
