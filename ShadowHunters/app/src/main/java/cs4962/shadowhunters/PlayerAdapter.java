@@ -61,6 +61,9 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
             title += " REVEALED AS : " + player.getCharacter().getName() + " (" + player.getCharacter().getTeam() + ")";
             content += "\nHEALTH: " + player.getCharacter().getHealth();
         }
+        if (player.isDead()) {
+            title += "\nPLAYER IS DEAD";
+        }
         int equipmentCount = player.getEquipment().size();
         content += "\nEQUIPMENT COUNT : " + equipmentCount;
 

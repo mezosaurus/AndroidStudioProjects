@@ -55,6 +55,7 @@ public class Game {
 
             // Select random player to start game
             pickRandomStartPlayer();
+            saveGame(mGameFile);
         }
     }
 
@@ -152,7 +153,7 @@ public class Game {
                 randomizeTeams(3, 3, 2);
                 break;
         }
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
         pList.savePlayerList(pList.getPlayerListFile());
     }
 
@@ -205,7 +206,7 @@ public class Game {
             int randomIndex = rand.nextInt(shuffledTeams.size());
             p.setCharacter(shuffledTeams.remove(randomIndex));
         }
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
     }
 
     private void initCharacters() {
@@ -222,7 +223,7 @@ public class Game {
         mShadowCharacters.add(new Character("Unknown"));
         mShadowCharacters.add(new Character("Vampire"));
         mShadowCharacters.add(new Character("Werewolf"));
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
     }
 
     private void initGreenCards() {
@@ -243,7 +244,7 @@ public class Game {
         mGreenCardList.add(new GreenCard("Spell"));
         mGreenCardList.add(new GreenCard("Tough Lesson"));
         shuffleCards("GREEN");
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
     }
 
     private void initBlackCards () {
@@ -264,7 +265,7 @@ public class Game {
         mBlackCardList.add(new BlackCard("Vampire Bat"));
         mBlackCardList.add(new BlackCard("Vampire Bat"));
         shuffleCards("BLACK");
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
     }
 
     private void initWhiteCards() {
@@ -285,7 +286,7 @@ public class Game {
         mWhiteCardList.add(new WhiteCard("Spear of Longinus"));
         mWhiteCardList.add(new WhiteCard("Talisman"));
         shuffleCards("WHITE");
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
     }
 
     public void shuffleCards(String color) {
@@ -347,7 +348,7 @@ public class Game {
             }
         }
 
-        saveGame(mGameFile);
+        //saveGame(mGameFile);
         pList.savePlayerList(pList.getPlayerListFile());
     }
 
@@ -355,6 +356,7 @@ public class Game {
         Gson gson = new Gson();
         // Save current player
         String jsonPlayer = gson.toJson(currentPlayer);
+        String jsonPlayerPosition = gson.toJson(currentPlayer.getBoardPosition());
         // Save player queue
         String jsonPlayerQueue = gson.toJson(mPlayers);
         // Save board
@@ -375,6 +377,7 @@ public class Game {
             FileWriter textWriter = new FileWriter(gameFile);
             BufferedWriter bufferedTextWriter = new BufferedWriter(textWriter);
             bufferedTextWriter.write(jsonPlayer + "\n");
+            bufferedTextWriter.write(jsonPlayerPosition + "\n");
             bufferedTextWriter.write(jsonPlayerQueue + "\n");
             bufferedTextWriter.write(jsonBoard + "\n");
             bufferedTextWriter.write(jsonHunterList + "\n");
@@ -398,6 +401,7 @@ public class Game {
             BufferedReader bufferedTextReader = new BufferedReader(textReader);
 
             String jsonPlayer = bufferedTextReader.readLine();
+            String jsonPlayerPosition = bufferedTextReader.readLine();
             String jsonPlayerQueue = bufferedTextReader.readLine();
             String jsonBoard = bufferedTextReader.readLine();
             String jsonHunterList = bufferedTextReader.readLine();
@@ -414,14 +418,17 @@ public class Game {
             Type playerQueueType = new TypeToken<LinkedList<Player>>(){}.getType();
             Type boardType = new TypeToken<ArrayList<AreaCard>>(){}.getType();
             Type characterListType = new TypeToken<Collection<Character>>(){}.getType();
-            Type greenCardListType = new TypeToken<Collection<Card>>(){}.getType();
-            Type blackCardListType = new TypeToken<ArrayList<BlackCard>>(){}.getType();
-            Type whiteCardListType = new TypeToken<ArrayList<WhiteCard>>(){}.getType();
+            Type greenCardListType = new TypeToken<Collection<GreenCard>>(){}.getType();
+            Type blackCardListType = new TypeToken<Collection<BlackCard>>(){}.getType();
+            Type whiteCardListType = new TypeToken<Collection<WhiteCard>>(){}.getType();
             Type greenCardsType = new TypeToken<LinkedList<GreenCard>>(){}.getType();
             Type blackCardsType = new TypeToken<LinkedList<BlackCard>>(){}.getType();
             Type whiteCardsType = new TypeToken<LinkedList<WhiteCard>>(){}.getType();
 
             currentPlayer = gson.fromJson(jsonPlayer, Player.class);
+            AreaCard position = gson.fromJson(jsonPlayerPosition, AreaCard.class);
+            currentPlayer.setBoardPosition(position);
+            PlayerList.getInstance().getPlayer(currentPlayer.getColor()).setBoardPosition(position);
 
             mPlayers = gson.fromJson(jsonPlayerQueue, playerQueueType);
 

@@ -19,6 +19,7 @@ public class Player implements Parcelable{
     private int color;
     private AreaCard boardPosition;
     private boolean revealed;
+    private boolean dead;
     private int damage;
 
     @Override
@@ -29,6 +30,7 @@ public class Player implements Parcelable{
         dest.writeInt(color);
         dest.writeParcelable(boardPosition, 0);
         dest.writeByte((byte) (revealed ? 1 : 0));
+        dest.writeByte((byte) (dead ? 1 : 0));
         dest.writeInt(damage);
     }
 
@@ -44,6 +46,7 @@ public class Player implements Parcelable{
         this.color = in.readInt();
         this.boardPosition = in.readParcelable(AreaCard.class.getClassLoader());
         this.revealed = in.readByte() != 0;
+        this.dead = in.readByte() != 0;
         this.damage = in.readInt();
     }
 
@@ -64,6 +67,7 @@ public class Player implements Parcelable{
         this.turn = false;
         this.damage = 0;
         this.revealed = false;
+        this.dead = false;
     }
 
     public String getName() {
@@ -104,6 +108,14 @@ public class Player implements Parcelable{
 
     public void setRevealed(boolean revealed) {
         this.revealed = revealed;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public void setDead(boolean dead) {
+        this.dead = dead;
     }
 
     public int getDamage() {

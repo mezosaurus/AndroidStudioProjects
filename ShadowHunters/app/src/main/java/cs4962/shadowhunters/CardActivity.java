@@ -22,8 +22,19 @@ public class CardActivity extends Activity {
         String cardName = i.getStringExtra("cardName");
         String cardText = i.getStringExtra("cardText");
         String color = i.getStringExtra("color");
+
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
+
+        if (color.equals("GREEN")) {
+            greenCardHandler(layout, cardName);
+        }
+        else if (color.equals("BLACK")) {
+            blackCardHandler(layout, cardName);
+        }
+        else {
+            whiteCardHandler(layout, cardName);
+        }
 
         TextView cardNameView = new TextView(this);
         cardNameView.setBackgroundColor(Color.GRAY);
@@ -31,10 +42,12 @@ public class CardActivity extends Activity {
         cardNameView.setTextSize(50);
         cardNameView.setText(cardName);
         cardNameView.setGravity(Gravity.CENTER);
+        cardNameView.setPadding(10, 10, 10, 50);
 
         TextView cardTextView = new TextView(this);
         cardTextView.setText(cardText);
         cardTextView.setGravity(Gravity.CENTER);
+        cardTextView.setTextSize(20);
 
         Button closeBtn = new Button(this);
         closeBtn.setText("Close");
@@ -52,15 +65,50 @@ public class CardActivity extends Activity {
         setContentView(layout);
     }
 
-    private void greenCardHandler() {
+    private void greenCardHandler(LinearLayout layout, String name) {
+        if (name.equals("Aid")) {
+
+        }
+        else if (name.equals("Anger")) {
+
+        }
+        else if (name.equals("Blackmail")) {
+
+        }
+        else if (name.equals("Bully")) {
+
+        }
+        else if (name.equals("Exorcism")) {
+
+        }
+        else if (name.equals("Greed")) {
+
+        }
+        else if (name.equals("Huddle")) {
+
+        }
+        else if (name.equals("Nurturance")) {
+
+        }
+        else if (name.equals("Prediction")) {
+
+        }
+        else if (name.equals("Slap")) {
+
+        }
+        else if (name.equals("Spell")) {
+
+        }
+        else if (name.equals("Tough Lesson")) {
+
+        }
+    }
+
+    private void blackCardHandler(LinearLayout layout, String name) {
 
     }
 
-    private void blackCardHandler() {
-
-    }
-
-    private void whiteCardHandler() {
+    private void whiteCardHandler(LinearLayout layout, String name) {
 
     }
 }

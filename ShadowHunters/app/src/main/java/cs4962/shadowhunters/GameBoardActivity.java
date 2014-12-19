@@ -20,26 +20,41 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Queue;
 
 
 public class GameBoardActivity extends Activity {
     private Game mGame;
-    private boolean mMoved = false;
+    private boolean mMoved;
+    private boolean mCardDrawn;
+    private int mNumShadowsDead = 0;
+    private int mNumHuntersDead = 0;
+    private int mNumNeutralsDead = 0;
     static final int PLAYER_ATTACK_REQUEST = 10;
     static final int CARD_REQUEST = 11;
     static final int WEIRDWOODS_ATTACK_REQUEST = 12;
     private ArrayList<AreaCard> mGroupOne = new ArrayList<AreaCard>();
     private ArrayList<AreaCard> mGroupTwo = new ArrayList<AreaCard>();
     private ArrayList<AreaCard> mGroupThree = new ArrayList<AreaCard>();
+    private File mTurnFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_board);
         PlayerList pList = PlayerList.getInstance();
+        mTurnFile = new File(getFilesDir(), "Turn.txt");
+        if (mTurnFile.exists()) {
+            loadTurn();
+        }
         mGame = new Game(new File(getFilesDir(), "Game.txt"));
         Player p = mGame.getCurrentPlayer();
         if (p.getBoardPosition() != null) {
@@ -92,7 +107,18 @@ public class GameBoardActivity extends Activity {
             }
         });
 
-        turnDialog();
+        if (mTurnFile.exists()) {
+            // resume turn
+            resumeTurnDialog();
+        }
+        else {
+            // start turn
+            turnDialog();
+        }
+    }
+
+    public interface OnPlayerKilledListener {
+        public void onPlayerKilled(Player p);
     }
 
     private void buildDamageGui() {
@@ -100,6 +126,7 @@ public class GameBoardActivity extends Activity {
         PlayerList pList = PlayerList.getInstance();
         // Get linear layout to add the views to
         LinearLayout damageLayout = (LinearLayout)findViewById(R.id.damageLinearLayout);
+        damageLayout.removeAllViews();
         ArrayList<DamageView> data = new ArrayList<DamageView>();
         // Draw 15 damage views since damage range is 0-14
         for (int i = 14; i >= 0; i--) {
@@ -265,6 +292,75 @@ public class GameBoardActivity extends Activity {
         return null;
     }
 
+    private void resumeTurnDialog() {
+        // Get player
+        Player p = mGame.getCurrentPlayer();
+        AreaCard position = p.getBoardPosition();
+
+        // Setup dialog layout
+        ScrollView scrollLayout = new ScrollView(this);
+        scrollLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        final LinearLayout turnDialogLayout = new LinearLayout(this);
+        turnDialogLayout.setOrientation(LinearLayout.VERTICAL);
+
+        // Get turn layout view objects
+        TextView turnText = new TextView(this);
+        String name = p.getName();
+        //turnText.setText("1. Roll to move\n\n2. Decide to take action at the area card you move to (Optional)\n\n3. Decide to attack another player within range. (Optional)");
+        if (mMoved) {
+            turnText.setText("You are at : " + position.getName());
+        }
+        else {
+            turnText.setText("Please complete the Move action to continue turn.");
+        }
+        turnDialogLayout.addView(turnText, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        final Button characterButton = new Button(this);
+        characterButton.setText("Show Character");
+        characterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Get image view
+                if (characterButton.getText().equals("Show Character")) {
+                    Player p = mGame.getCurrentPlayer();
+                    Character c = p.getCharacter();
+                    ImageView characterImage = new ImageView(GameBoardActivity.this);
+                    characterImage.setAdjustViewBounds(true);
+                    characterImage.setImageDrawable(getCharacterImage(c.getName()));
+                    turnDialogLayout.addView(characterImage, 1);
+                    characterButton.setText("Hide Character");
+                }
+                else {
+                    turnDialogLayout.removeViewAt(1);
+                    characterButton.setText("Show Character");
+                }
+            }
+        });
+        /*LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)characterButton.getLayoutParams();
+        params.gravity = Gravity.CENTER;
+        characterButton.setLayoutParams(params);*/
+        turnDialogLayout.addView(characterButton, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setPositiveButton("Resume Turn", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                turnDialogLayout.removeViewAt(1);
+                dialog.dismiss();
+            }
+        });
+
+        scrollLayout.addView(turnDialogLayout);
+
+        builder.setView(scrollLayout);
+
+        builder.setTitle(name + "'s Turn");
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     private void turnDialog() {
         // Get player
         Player p = mGame.getCurrentPlayer();
@@ -370,6 +466,8 @@ public class GameBoardActivity extends Activity {
                         if (mGame.getBoard().get(i).getName().equals(result)) {
                             mGame.getCurrentPlayer().setBoardPosition(mGame.getBoard().get(i));
                             PlayerList.getInstance().getPlayer(mGame.getCurrentPlayer().getColor()).setBoardPosition(mGame.getBoard().get(i));
+                            PlayerList.getInstance().savePlayerList(new File(getFilesDir(), "PlayerList.txt"));
+                            mGame.saveGame(new File(getFilesDir(), "Game.txt"));
                         }
                     }
                     String text = "You rolled a 7. Please select the area card you wish to move to.";
@@ -404,6 +502,8 @@ public class GameBoardActivity extends Activity {
 
         mGame.getCurrentPlayer().setBoardPosition(newPosition);
         PlayerList.getInstance().getPlayer(mGame.getCurrentPlayer().getColor()).setBoardPosition(newPosition);
+        PlayerList.getInstance().savePlayerList(new File(getFilesDir(), "PlayerList.txt"));
+        mGame.saveGame(new File(getFilesDir(), "Game.txt"));
 
         resultText.setText("You rolled a [" + movementPosition + "].\n\nMoved to area card - " + newPosition.getName() + "\n\n" + newPosition.getText());
 
@@ -413,6 +513,7 @@ public class GameBoardActivity extends Activity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mMoved = true;
+                saveTurn();
                 dialog.dismiss();
             }
         });
@@ -497,6 +598,7 @@ public class GameBoardActivity extends Activity {
         dialogBuilder.setPositiveButton("Continue Turn", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                saveTurn();
                 dialog.dismiss();
             }
         });
@@ -505,6 +607,7 @@ public class GameBoardActivity extends Activity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mMoved = false;
+                saveTurn();
                 dialog.dismiss();
                 endTurn();
             }
@@ -518,6 +621,9 @@ public class GameBoardActivity extends Activity {
         greenCardDraw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mCardDrawn) {
+                    return;
+                }
                 // green card draw selected
                 Card card = drawCard("GREEN");
                 if (card == null)
@@ -534,6 +640,9 @@ public class GameBoardActivity extends Activity {
         blackCardDraw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mCardDrawn) {
+                    return;
+                }
                 // black card draw
                 Card card = drawCard("BLACK");
                 if (card == null)
@@ -551,6 +660,9 @@ public class GameBoardActivity extends Activity {
         whiteCardDraw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mCardDrawn) {
+                    return;
+                }
                 // white card draw
                 Card card = drawCard("WHITE");
                 if (card == null)
@@ -576,28 +688,43 @@ public class GameBoardActivity extends Activity {
         if (requestCode == CARD_REQUEST) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-
+                mCardDrawn = true;
             }
         }
         if (requestCode == WEIRDWOODS_ATTACK_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Player attackedPlayer = data.getParcelableExtra("playerToAttack");
+                Player pListPlayer = PlayerList.getInstance().getPlayer(attackedPlayer.getColor());
                 int dmgAmount = data.getIntExtra("dmgAmount", 2);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 TextView test = new TextView(this);
 
                 test.setText("Successfully attacked " + attackedPlayer.getName() + " for " + dmgAmount);
                 builder.setTitle("Attack Success");
-                attackedPlayer.setDamage(attackedPlayer.getDamage() + dmgAmount);
+                int damage = attackedPlayer.getDamage() + dmgAmount;
+                if (damage > attackedPlayer.getCharacter().getHealth()) {
+                    damage = attackedPlayer.getCharacter().getHealth();
+                    attackedPlayer.setRevealed(true);
+                    attackedPlayer.setDead(true);
+                    pListPlayer.setRevealed(true);
+                    pListPlayer.setDead(true);
+                    String team = pListPlayer.getCharacter().getTeam();
+                    playerDead(team);
+                }
+                attackedPlayer.setDamage(damage);
+                pListPlayer.setDamage(damage);
+                PlayerList.getInstance().savePlayerList(new File(getFilesDir(), "PlayerList.txt"));
 
                 builder.setView(test);
-                builder.setPositiveButton("End Turn", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mMoved = false;
-                        findViewById(R.id.damageLinearLayout).invalidate();
+                        saveTurn();
+                        //GameBoardActivity.this.findViewById(R.id.damageLinearLayout).invalidate();
+                        buildDamageGui();
                         dialog.dismiss();
-                        endTurn();
+                        //endTurn();
                     }
                 });
                 AlertDialog dialog = builder.create();
@@ -607,12 +734,13 @@ public class GameBoardActivity extends Activity {
         if (requestCode == PLAYER_ATTACK_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Player attackedPlayer = data.getParcelableExtra("playerToAttack");
+                Player pListPlayer = PlayerList.getInstance().getPlayer(attackedPlayer.getColor());
                 // Determine if selected player is in attack range
                 AreaCard position = attackedPlayer.getBoardPosition();
                 Player currentPlayer = mGame.getCurrentPlayer();
                 AreaCard currentPosition = currentPlayer.getBoardPosition();
-                boolean inRange = false;
-                if (mGroupOne.contains(position) && mGroupOne.contains(currentPosition)) {
+                boolean inRange = inRange(getBoardGroup(currentPosition), position);
+                /*if (mGroupOne.contains(position) && mGroupOne.contains(currentPosition)) {
                     inRange = true;
                 }
                 else if (mGroupTwo.contains(position) && mGroupTwo.contains(currentPosition)) {
@@ -620,7 +748,7 @@ public class GameBoardActivity extends Activity {
                 }
                 else if (mGroupThree.contains(position) && mGroupThree.contains(currentPosition)) {
                     inRange = true;
-                }
+                }*/
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 TextView test = new TextView(this);
                 if (inRange) {
@@ -628,7 +756,19 @@ public class GameBoardActivity extends Activity {
                     if (attackDmg > 0) {
                         test.setText("Successfully attacked " + attackedPlayer.getName() + " for " + attackDmg);
                         builder.setTitle("Attack Success");
-                        attackedPlayer.setDamage(attackedPlayer.getDamage() + attackDmg);
+                        int damage = attackedPlayer.getDamage() + attackDmg;
+                        if (damage > attackedPlayer.getCharacter().getHealth()) {
+                            damage = attackedPlayer.getCharacter().getHealth();
+                            attackedPlayer.setRevealed(true);
+                            attackedPlayer.setDead(true);
+                            pListPlayer.setRevealed(true);
+                            pListPlayer.setDead(true);
+                            String team = pListPlayer.getCharacter().getTeam();
+                            playerDead(team);
+                        }
+                        attackedPlayer.setDamage(damage);
+                        pListPlayer.setDamage(damage);
+                        PlayerList.getInstance().savePlayerList(new File(getFilesDir(), "PlayerList.txt"));
                     }
                     else {
                         test.setText("You rolled a 0. Attack failed.");
@@ -644,7 +784,9 @@ public class GameBoardActivity extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mMoved = false;
-                        findViewById(R.id.damageLinearLayout).invalidate();
+                        saveTurn();
+                        //GameBoardActivity.this.findViewById(R.id.damageLinearLayout).invalidate();
+                        buildDamageGui();
                         dialog.dismiss();
                         endTurn();
                     }
@@ -655,13 +797,188 @@ public class GameBoardActivity extends Activity {
         }
     }
 
+    private int getBoardGroup (AreaCard card) {
+        String name = card.getName();
+        int retVal = 0;
+        for (int i = 0; i < mGroupOne.size(); i++) {
+            String cardName = mGroupOne.get(i).getName();
+            if (cardName.equals(name)) {
+                retVal = 1;
+            }
+        }
+        for (int i = 0; i < mGroupTwo.size(); i++) {
+            String cardName = mGroupTwo.get(i).getName();
+            if (cardName.equals(name)) {
+                retVal = 2;
+            }
+        }
+        for (int i = 0; i < mGroupThree.size(); i++) {
+            String cardName = mGroupThree.get(i).getName();
+            if (cardName.equals(name)) {
+                retVal = 3;
+            }
+        }
+        return retVal;
+    }
+
+    private boolean inRange(int boardGroup, AreaCard card) {
+        boolean inRange = false;
+        String name = card.getName();
+        switch (boardGroup) {
+            case 1:
+                for (int i = 0; i < mGroupOne.size(); i++) {
+                    String cardName = mGroupOne.get(i).getName();
+                    if (cardName.equals(name)) {
+                        inRange = true;
+                    }
+                }
+                break;
+            case 2:
+                for (int i = 0; i < mGroupTwo.size(); i++) {
+                    String cardName = mGroupTwo.get(i).getName();
+                    if (cardName.equals(name)) {
+                        inRange = true;
+                    }
+                }
+                break;
+            case 3:
+                for (int i = 0; i < mGroupThree.size(); i++) {
+                    String cardName = mGroupThree.get(i).getName();
+                    if (cardName.equals(name)) {
+                        inRange = true;
+                    }
+                }
+                break;
+        }
+        return inRange;
+    }
+
     private void endTurn() {
         // Rotate players
         Player p = mGame.getPlayers().pop();
-        mGame.setCurrentPlayer(p);
-        mGame.getPlayers().addLast(p);
+        if (!p.isDead()) {
+            mGame.setCurrentPlayer(p);
+            mGame.getPlayers().addLast(p);
+        }
 
         turnDialog();
+    }
+
+    private void saveTurn() {
+        Gson gson = new Gson();
+        // Save moved boolean
+        String jsonMoved = gson.toJson(mMoved);
+        String jsonCardDrawn = gson.toJson(mCardDrawn);
+        String jsonHuntersDead = gson.toJson(mNumHuntersDead);
+        String jsonShadowsDead = gson.toJson(mNumShadowsDead);
+        String jsonNeutralsDead = gson.toJson(mNumNeutralsDead);
+
+        try {
+            FileWriter textWriter = new FileWriter(mTurnFile);
+            BufferedWriter bufferedTextWriter = new BufferedWriter(textWriter);
+            bufferedTextWriter.write(jsonMoved + "\n");
+            bufferedTextWriter.write(jsonCardDrawn + "\n");
+            bufferedTextWriter.write(jsonHuntersDead + "\n");
+            bufferedTextWriter.write(jsonShadowsDead + "\n");
+            bufferedTextWriter.write(jsonNeutralsDead);
+            bufferedTextWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadTurn() {
+        try {
+            FileReader textReader = new FileReader(mTurnFile);
+            BufferedReader bufferedTextReader = new BufferedReader(textReader);
+
+            String jsonMoved = bufferedTextReader.readLine();
+            String jsonCardDrawn = bufferedTextReader.readLine();
+            String jsonHuntersDead = bufferedTextReader.readLine();
+            String jsonShadowsDead = bufferedTextReader.readLine();
+            String jsonNeutralsDead = bufferedTextReader.readLine();
+
+            Gson gson = new Gson();
+
+            mMoved = gson.fromJson(jsonMoved, Boolean.class);
+            mCardDrawn = gson.fromJson(jsonCardDrawn, Boolean.class);
+            mNumHuntersDead = gson.fromJson(jsonHuntersDead, Integer.class);
+            mNumShadowsDead = gson.fromJson(jsonShadowsDead, Integer.class);
+            mNumNeutralsDead = gson.fromJson(jsonNeutralsDead, Integer.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void playerDead(String team) {
+        int numPlayers = PlayerList.getInstance().getIdentifiers().size();
+        int numHunters = 0;
+        int numShadows = 0;
+        int numNeutrals = 0;
+        for (int color: PlayerList.getInstance().getIdentifiers()) {
+            Player p = PlayerList.getInstance().getPlayer(color);
+            if (p.getCharacter().getTeam().equals("HUNTER")) {
+                numHunters++;
+            }
+            else if (p.getCharacter().getTeam().equals("SHADOW")) {
+                numShadows++;
+            }
+            else if (p.getCharacter().getTeam().equals("NEUTRAL")) {
+                numNeutrals++;
+            }
+        }
+        if (team.equals("HUNTER")) {
+            mNumHuntersDead++;
+            if (mNumHuntersDead == numHunters) {
+                // All hunters dead, shadows win
+                endGame("SHADOWS");
+            }
+        }
+        else if (team.equals("SHADOW")) {
+            mNumShadowsDead++;
+            if (mNumShadowsDead == numShadows) {
+                // All shadows dead, hunters win
+                endGame("HUNTERS");
+            }
+        }
+        else if (team.equals("NEUTRAL")) {
+            mNumNeutralsDead++;
+            if (numNeutrals == 3 && mNumNeutralsDead == numNeutrals) {
+                // 3 neutrals dead, shadows win
+                endGame("SHADOWS");
+            }
+        }
+    }
+
+    private void endGame (String winningTeam) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        TextView endView = new TextView(this);
+        endView.setText(winningTeam + " WON THE GAME");
+        builder.setTitle("GAME OVER");
+        builder.setView(endView);
+        builder.setPositiveButton("New Game", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                File gameFile = new File(getFilesDir(), "Game.txt");
+                gameFile.delete();
+                dialogInterface.dismiss();
+                Intent newGame = new Intent(GameBoardActivity.this, HomeActivity.class);
+                startActivity(newGame);
+                finish();
+            }
+        });
+        builder.setNegativeButton("Close App", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                File gameFile = new File(getFilesDir(), "Game.txt");
+                gameFile.delete();
+                finish();
+                System.exit(0);
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private Drawable getCharacterImage(String name) {
