@@ -27,6 +27,7 @@ public class Player implements Parcelable{
         dest.writeParcelable(character, 0);
         dest.writeByte((byte) (turn ? 1 : 0));
         dest.writeInt(color);
+        dest.writeParcelable(boardPosition, 0);
         dest.writeByte((byte) (revealed ? 1 : 0));
         dest.writeInt(damage);
     }
@@ -41,6 +42,7 @@ public class Player implements Parcelable{
         this.character = in.readParcelable(Character.class.getClassLoader());
         this.turn = in.readByte() != 0;
         this.color = in.readInt();
+        this.boardPosition = in.readParcelable(AreaCard.class.getClassLoader());
         this.revealed = in.readByte() != 0;
         this.damage = in.readInt();
     }

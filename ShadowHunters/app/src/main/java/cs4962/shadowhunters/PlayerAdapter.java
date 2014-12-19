@@ -62,7 +62,12 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
             content += "\nHEALTH: " + player.getCharacter().getHealth();
         }
         int equipmentCount = player.getEquipment().size();
-        content += "EQUIPMENT COUNT : " + equipmentCount;
+        content += "\nEQUIPMENT COUNT : " + equipmentCount;
+
+        AreaCard boardPos = player.getBoardPosition();
+        if (boardPos != null) {
+            content += "\nBOARD POSITION: " + boardPos.getName();
+        }
 
         holder.txtTitle.setText(title);
         holder.txtContent.setText(content);

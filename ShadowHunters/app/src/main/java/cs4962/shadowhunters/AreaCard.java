@@ -1,16 +1,51 @@
 package cs4962.shadowhunters;
 
 import android.graphics.Color;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Created by Ethan on 12/3/2014.
  */
-public class AreaCard {
+public class AreaCard implements Parcelable{
     private int mColor;
     private String mName;
     private String mText;
     private int mRollOne;
     private int mRollTwo;
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(mColor);
+        dest.writeString(mName);
+        dest.writeString(mText);
+        dest.writeInt(mRollOne);
+        dest.writeInt(mRollTwo);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public AreaCard(Parcel in) {
+        this.mColor = in.readInt();
+        this.mName = in.readString();
+        this.mText = in.readString();
+        this.mRollOne = in.readInt();
+        this.mRollTwo = in.readInt();
+    }
+
+    public static final Parcelable.Creator<AreaCard> CREATOR
+            = new Parcelable.Creator<AreaCard>() {
+        public AreaCard createFromParcel(Parcel in) {
+            return new AreaCard(in);
+        }
+
+        public AreaCard[] newArray(int size) {
+            return new AreaCard[size];
+        }
+    };
 
     public AreaCard(String name) {
         this.mName = name;

@@ -329,7 +329,7 @@ public class Game {
         currentPlayer.setTurn(true);
         // start player is at beginning of the list, push the list on backwards
         if (index == 0) {
-            for (int i = temp.size(); i >= 0; i--) {
+            for (int i = temp.size()-1; i >= 0; i--) {
                 mPlayers.push(temp.get(i));
             }
         }

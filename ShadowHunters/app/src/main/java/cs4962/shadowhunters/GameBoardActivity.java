@@ -29,6 +29,11 @@ public class GameBoardActivity extends Activity {
     private Game mGame;
     private boolean mMoved = false;
     static final int PLAYER_ATTACK_REQUEST = 10;
+    static final int CARD_REQUEST = 11;
+    static final int WEIRDWOODS_ATTACK_REQUEST = 12;
+    private ArrayList<AreaCard> mGroupOne = new ArrayList<AreaCard>();
+    private ArrayList<AreaCard> mGroupTwo = new ArrayList<AreaCard>();
+    private ArrayList<AreaCard> mGroupThree = new ArrayList<AreaCard>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +50,6 @@ public class GameBoardActivity extends Activity {
         buildDamageGui();
         // build board GUI
         buildBoardGui(board);
-
-
 
 
         // Players list button listener
@@ -136,6 +139,7 @@ public class GameBoardActivity extends Activity {
             //cardView.setBackgroundDrawable(getResources().getDrawable(R.drawable.rectangle));
             cardView.setGravity(Gravity.CENTER);
             AreaCard mCard = board.get(i);
+            mGroupOne.add(mCard);
             String cardText = "(" + mCard.getRollOne() + ")";
             if (mCard.getRollTwo() != 0)
                 cardText += " (" + mCard.getRollTwo() + ")\n\n";
@@ -151,6 +155,7 @@ public class GameBoardActivity extends Activity {
             //cardView.setBackgroundDrawable(getResources().getDrawable(R.drawable.rectangle));
             cardView.setGravity(Gravity.CENTER);
             AreaCard mCard = board.get(i);
+            mGroupTwo.add(mCard);
             String cardText = "(" + mCard.getRollOne() + ")";
             if (mCard.getRollTwo() != 0)
                 cardText += " (" + mCard.getRollTwo() + ")\n\n";
@@ -166,6 +171,7 @@ public class GameBoardActivity extends Activity {
             //cardView.setBackgroundDrawable(getResources().getDrawable(R.drawable.rectangle));
             cardView.setGravity(Gravity.CENTER);
             AreaCard mCard = board.get(i);
+            mGroupThree.add(mCard);
             String cardText = "(" + mCard.getRollOne() + ")";
             if (mCard.getRollTwo() != 0)
                 cardText += " (" + mCard.getRollTwo() + ")\n\n";
@@ -177,11 +183,11 @@ public class GameBoardActivity extends Activity {
         }
     }
 
-    private void drawCard(String color) {
+    private Card drawCard(String color) {
         Player p = mGame.getCurrentPlayer();
         AreaCard boardPosition = p.getBoardPosition();
         if (boardPosition == null) {
-            return;
+            return null;
         }
         boolean validBoardPosition = true;
 
@@ -190,8 +196,13 @@ public class GameBoardActivity extends Activity {
             if (boardPosition.getRollOne() == 4 || boardPosition.getRollOne() == 8) {
                 Queue<BlackCard> bCards = mGame.getBlackCards();
                 if (!bCards.isEmpty()) {
-                    BlackCard bCard = bCards.remove();
-                    cardDialog(bCard);
+                    return bCards.remove();
+                    //cardDialog(bCard);
+                }
+                else {
+                    // Re build card deck
+                    mGame.shuffleCards("BLACK");
+                    return mGame.getBlackCards().remove();
                 }
             }
             else {
@@ -203,8 +214,13 @@ public class GameBoardActivity extends Activity {
             if (boardPosition.getRollOne() == 4 || boardPosition. getRollOne() == 6) {
                 Queue<WhiteCard> wCards = mGame.getWhiteCards();
                 if (!wCards.isEmpty()) {
-                    WhiteCard wCard = wCards.remove();
-                    cardDialog(wCard);
+                    return wCards.remove();
+                    //cardDialog(wCard);
+                }
+                else {
+                    // Re build card deck
+                    mGame.shuffleCards("WHITE");
+                    return mGame.getWhiteCards().remove();
                 }
             }
             else {
@@ -217,8 +233,13 @@ public class GameBoardActivity extends Activity {
                 // draw green card
                 Queue<GreenCard> gCards = mGame.getGreenCards();
                 if (!gCards.isEmpty()) {
-                    GreenCard gCard = gCards.remove();
-                    cardDialog(gCard);
+                    return gCards.remove();
+                    //cardDialog(gCard);
+                }
+                else {
+                    // Re build card deck
+                    mGame.shuffleCards("GREEN");
+                    return mGame.getGreenCards().remove();
                 }
             }
             else {
@@ -241,6 +262,7 @@ public class GameBoardActivity extends Activity {
             AlertDialog dialog = builder.create();
             dialog.show();
         }
+        return null;
     }
 
     private void turnDialog() {
@@ -306,6 +328,7 @@ public class GameBoardActivity extends Activity {
     }
 
     private void moveDialog() {
+        AreaCard currentPosition = mGame.getCurrentPlayer().getBoardPosition();
         LinearLayout moveDialogLayout = new LinearLayout(this);
         moveDialogLayout.setOrientation(LinearLayout.VERTICAL);
         moveDialogLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -346,6 +369,7 @@ public class GameBoardActivity extends Activity {
                     for (int i = 0; i < mGame.getBoard().size(); i++) {
                         if (mGame.getBoard().get(i).getName().equals(result)) {
                             mGame.getCurrentPlayer().setBoardPosition(mGame.getBoard().get(i));
+                            PlayerList.getInstance().getPlayer(mGame.getCurrentPlayer().getColor()).setBoardPosition(mGame.getBoard().get(i));
                         }
                     }
                     String text = "You rolled a 7. Please select the area card you wish to move to.";
@@ -361,7 +385,7 @@ public class GameBoardActivity extends Activity {
             return;
         }
 
-        AreaCard currentPosition = mGame.getCurrentPlayer().getBoardPosition();
+
         if (currentPosition != null) {
             // Check to make sure they didn't roll to the same position they are already at
             while ((movementPosition == currentPosition.getRollOne() || movementPosition == currentPosition.getRollTwo())) {
@@ -379,6 +403,7 @@ public class GameBoardActivity extends Activity {
         }
 
         mGame.getCurrentPlayer().setBoardPosition(newPosition);
+        PlayerList.getInstance().getPlayer(mGame.getCurrentPlayer().getColor()).setBoardPosition(newPosition);
 
         resultText.setText("You rolled a [" + movementPosition + "].\n\nMoved to area card - " + newPosition.getName() + "\n\n" + newPosition.getText());
 
@@ -395,12 +420,8 @@ public class GameBoardActivity extends Activity {
         builder.setNegativeButton("End Turn", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int i) {
-                // Rotate players
-                Player p = mGame.getPlayers().pop();
-                mGame.setCurrentPlayer(p);
-                mGame.getPlayers().addLast(p);
                 dialog.dismiss();
-                turnDialog();
+                endTurn();
             }
         });
 
@@ -409,25 +430,6 @@ public class GameBoardActivity extends Activity {
         builder.setTitle(p.getName() + "'s Movement Result");
 
         AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    private void cardDialog(Card card) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        TextView cardTextView = new TextView(this);
-        String cardText = card.getName();
-        cardText += "\n\n" + card.getText();
-        cardTextView.setText(cardText);
-        dialogBuilder.setNegativeButton("Close", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int i) {
-                dialog.dismiss();
-            }
-        });
-
-        dialogBuilder.setView(cardTextView);
-        dialogBuilder.setTitle("Card");
-        AlertDialog dialog = dialogBuilder.create();
         dialog.show();
     }
 
@@ -485,17 +487,46 @@ public class GameBoardActivity extends Activity {
                 @Override
                 public void onClick(View view) {
                     Intent dmgIntent = new Intent(GameBoardActivity.this, PlayerListActivity.class);
-                    dmgIntent.putExtra("action", "damage");
+                    dmgIntent.putExtra("weirdwoods", true);
                     dmgIntent.putExtra("amount", 2);
+                    startActivityForResult(dmgIntent, WEIRDWOODS_ATTACK_REQUEST);
                 }
             });
         }
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setPositiveButton("Continue Turn", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        dialogBuilder.setNegativeButton("End Turn", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mMoved = false;
+                dialog.dismiss();
+                endTurn();
+            }
+        });
+
+        dialogBuilder.setView(actionLayout);
+        dialogBuilder.setTitle("Area Card Action");
+        final AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
         // green card button
         greenCardDraw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // green card draw selected
-                drawCard("GREEN");
+                Card card = drawCard("GREEN");
+                if (card == null)
+                    return;
+                Intent cardIntent = new Intent(GameBoardActivity.this, CardActivity.class);
+                cardIntent.putExtra("cardName", card.getName());
+                cardIntent.putExtra("cardText", card.getText());
+                cardIntent.putExtra("color", "GREEN");
+                startActivityForResult(cardIntent, CARD_REQUEST);
             }
         });
 
@@ -504,7 +535,15 @@ public class GameBoardActivity extends Activity {
             @Override
             public void onClick(View v) {
                 // black card draw
-                drawCard("BLACK");
+                Card card = drawCard("BLACK");
+                if (card == null)
+                    return;
+
+                Intent cardIntent = new Intent(GameBoardActivity.this, CardActivity.class);
+                cardIntent.putExtra("cardName", card.getName());
+                cardIntent.putExtra("cardText", card.getText());
+                cardIntent.putExtra("color", "BLACK");
+                startActivityForResult(cardIntent, CARD_REQUEST);
             }
         });
 
@@ -513,19 +552,116 @@ public class GameBoardActivity extends Activity {
             @Override
             public void onClick(View v) {
                 // white card draw
-                drawCard("WHITE");
+                Card card = drawCard("WHITE");
+                if (card == null)
+                    return;
+                Intent cardIntent = new Intent(GameBoardActivity.this, CardActivity.class);
+                cardIntent.putExtra("cardName", card.getName());
+                cardIntent.putExtra("cardText", card.getText());
+                cardIntent.putExtra("color", "WHITE");
+                startActivityForResult(cardIntent, CARD_REQUEST);
             }
         });
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-
-        dialogBuilder.setView(actionLayout);
-        dialogBuilder.setTitle("Area Card Action");
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
     }
 
     private void attackDialog() {
+        Intent attackIntent = new Intent(GameBoardActivity.this, PlayerListActivity.class);
+        attackIntent.putExtra("attack", true);
+        startActivityForResult(attackIntent, PLAYER_ATTACK_REQUEST);
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == CARD_REQUEST) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+
+            }
+        }
+        if (requestCode == WEIRDWOODS_ATTACK_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Player attackedPlayer = data.getParcelableExtra("playerToAttack");
+                int dmgAmount = data.getIntExtra("dmgAmount", 2);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                TextView test = new TextView(this);
+
+                test.setText("Successfully attacked " + attackedPlayer.getName() + " for " + dmgAmount);
+                builder.setTitle("Attack Success");
+                attackedPlayer.setDamage(attackedPlayer.getDamage() + dmgAmount);
+
+                builder.setView(test);
+                builder.setPositiveButton("End Turn", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mMoved = false;
+                        findViewById(R.id.damageLinearLayout).invalidate();
+                        dialog.dismiss();
+                        endTurn();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        }
+        if (requestCode == PLAYER_ATTACK_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Player attackedPlayer = data.getParcelableExtra("playerToAttack");
+                // Determine if selected player is in attack range
+                AreaCard position = attackedPlayer.getBoardPosition();
+                Player currentPlayer = mGame.getCurrentPlayer();
+                AreaCard currentPosition = currentPlayer.getBoardPosition();
+                boolean inRange = false;
+                if (mGroupOne.contains(position) && mGroupOne.contains(currentPosition)) {
+                    inRange = true;
+                }
+                else if (mGroupTwo.contains(position) && mGroupTwo.contains(currentPosition)) {
+                    inRange = true;
+                }
+                else if (mGroupThree.contains(position) && mGroupThree.contains(currentPosition)) {
+                    inRange = true;
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                TextView test = new TextView(this);
+                if (inRange) {
+                    int attackDmg = Math.abs(Utils.rollDie(6) - Utils.rollDie(4));
+                    if (attackDmg > 0) {
+                        test.setText("Successfully attacked " + attackedPlayer.getName() + " for " + attackDmg);
+                        builder.setTitle("Attack Success");
+                        attackedPlayer.setDamage(attackedPlayer.getDamage() + attackDmg);
+                    }
+                    else {
+                        test.setText("You rolled a 0. Attack failed.");
+                        builder.setTitle("Attack Failure");
+                    }
+                }
+                else {
+                    test.setText("ATTACK FAILED. PLAYER SELECTED NOT IN RANGE.");
+                    builder.setTitle("Attack Failure");
+                }
+                builder.setView(test);
+                builder.setPositiveButton("End Turn", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mMoved = false;
+                        findViewById(R.id.damageLinearLayout).invalidate();
+                        dialog.dismiss();
+                        endTurn();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        }
+    }
+
+    private void endTurn() {
+        // Rotate players
+        Player p = mGame.getPlayers().pop();
+        mGame.setCurrentPlayer(p);
+        mGame.getPlayers().addLast(p);
+
+        turnDialog();
     }
 
     private Drawable getCharacterImage(String name) {

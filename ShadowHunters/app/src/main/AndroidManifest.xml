@@ -36,7 +36,7 @@
             android:label="@string/title_activity_character_card" >
         </activity>
         <activity
-            android:name=".TurnActivity"
+            android:name=".CardActivity"
             android:label="@string/title_activity_turn" >
         </activity>
     </application>
