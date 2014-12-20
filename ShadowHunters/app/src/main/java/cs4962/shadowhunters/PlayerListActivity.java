@@ -1,6 +1,8 @@
 package cs4962.shadowhunters;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -22,12 +24,15 @@ public class PlayerListActivity extends Activity {
     private boolean mWoodsDmg = false;
     private int mWoodsAmount = 0;
     private boolean mCard = false;
+    private Player mCurrentPlayer;
+    private boolean mViewOnly = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player_list);
 
-        Intent i = getIntent();
+        final Intent i = getIntent();
         if (i.hasExtra("attack"))
             mAttack = i.getBooleanExtra("attack", false);
         if (i.hasExtra("weirdwoods")) {
@@ -42,6 +47,14 @@ public class PlayerListActivity extends Activity {
         }
         if (i.hasExtra("cardrequest")) {
             mCard = i.getBooleanExtra("cardrequest", false);
+        }
+
+        if (i.hasExtra("player")) {
+            mCurrentPlayer = i.getParcelableExtra("player");
+        }
+
+        if (i.hasExtra("viewlist")) {
+            mViewOnly = true;
         }
 
 
@@ -59,26 +72,41 @@ public class PlayerListActivity extends Activity {
         playerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (mViewOnly)
+                    return;
                 Player p = (Player)parent.getItemAtPosition(position);
                 Intent resultIntent = new Intent(PlayerListActivity.this, GameBoardActivity.class);
+                if (mCurrentPlayer != null) {
+                    if (!i.hasExtra("weirdwoods") && p.getName().equals(mCurrentPlayer.getName())) {
+                        return;
+                        /*AlertDialog.Builder builder = new AlertDialog.Builder(PlayerListActivity.this);
+                        builder.setTitle("Invalid Selection");
+                        builder.setMessage("You cannot select yourself for this action.");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();*/
+                    }
+                }
                 if (mAttack) {
                     resultIntent.putExtra("playerToAttack", p);
                     setResult(RESULT_OK, resultIntent);
                     finish();
-                }
-                else if (mWoodsHeal) {
-                    resultIntent.putExtra("playerToAttack", p);
-                    resultIntent.putExtra("dmgAmount", mWoodsAmount);
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
-                }
-                else if (mWoodsDmg) {
+                } else if (mWoodsHeal) {
                     resultIntent.putExtra("playerToHeal", p);
                     resultIntent.putExtra("healAmount", mWoodsAmount);
                     setResult(RESULT_OK, resultIntent);
                     finish();
-                }
-                else if (mCard) {
+                } else if (mWoodsDmg) {
+                    resultIntent.putExtra("playerToAttack", p);
+                    resultIntent.putExtra("dmgAmount", mWoodsAmount);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                } else if (mCard) {
                     resultIntent.putExtra("playerSelected", p);
                     setResult(RESULT_OK, resultIntent);
                     finish();
@@ -96,9 +124,8 @@ public class PlayerListActivity extends Activity {
                     setResult(RESULT_CANCELED, resultIntent);
                     finish();
                 }
-                else {
-                    Intent boardIntent = new Intent(PlayerListActivity.this, GameBoardActivity.class);
-                    startActivity(boardIntent);
+                if (mViewOnly) {
+                    setResult(RESULT_OK, resultIntent);
                     finish();
                 }
             }

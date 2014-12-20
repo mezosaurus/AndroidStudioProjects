@@ -54,35 +54,35 @@ public class AreaCard implements Parcelable{
             mColor = Color.GREEN;
             mRollOne = 2;
             mRollTwo = 3;
-            mText = "You may draw a Green Card.";
+            mText = "You may draw\na Green Card.";
         }
         else if (name.equals("Underworld Gate")) {
             // purple
             mColor = Utils.mixColor(Color.BLUE, Color.RED);
             mRollOne = 4;
             mRollTwo = 5;
-            mText = "You may draw a card from the stack of your choice.";
+            mText = "You may draw\na card\nfrom the stack\nof your choice.";
         }
         else if (name.equals("Church")) {
             // white
             mColor = Color.WHITE;
             mRollOne = 6;
             mRollTwo = 0;
-            mText = "You may draw a White card.";
+            mText = "You may draw\na White card.";
         }
         else if (name.equals("Cemetery")) {
             // black
             mColor = Color.BLACK;
             mRollOne = 8;
             mRollTwo = 0;
-            mText = "You may draw a Black card.";
+            mText = "You may draw\na Black card.";
         }
         else if (name.equals("Weird Woods")) {
             // grey
             mColor = Color.GRAY;
             mRollOne = 9;
             mRollTwo = 0;
-            mText = "You may either give 2 damage to any player or heal 1 damage of any player.";
+            mText = "You may either\ngive 2 damage\nto any player or\nheal 1 damage\nof any player.";
         }
         else if (name.equals("Erstwhile Altar")) {
             // brown
@@ -90,7 +90,7 @@ public class AreaCard implements Parcelable{
             mColor = Utils.mixColor(Color.BLUE, orange);
             mRollOne = 10;
             mRollTwo = 0;
-            mText = "You may steal an Equipment Card from any player.";
+            mText = "You may steal an\nEquipment Card\nfrom any player.";
         }
     }
 

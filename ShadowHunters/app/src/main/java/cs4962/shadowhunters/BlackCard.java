@@ -12,7 +12,7 @@ public class BlackCard extends Card {
         this.name = name;
         if (name.equals("Banana Peel")) {
             this.singleUse = true;
-            this.text = "Give one of your equipment cards to another character. If you have no equipment cards, you receive 1 damage.";
+            this.text = "You slip and receive 1 damage.";
             this.damageAmount = 1;
             this.giveEquipment = true;
         }
@@ -21,11 +21,11 @@ public class BlackCard extends Card {
             this.text = "You give 2 damage to any character and receive 2 damage to yourself.";
             this.damageAmount = 2;
         }
-        else if (name.equals("Butcher Knife") || name.equals("Chainsaw") || name.equals("Rusted Broad Axe")) {
+        /*else if (name.equals("Butcher Knife") || name.equals("Chainsaw") || name.equals("Rusted Broad Axe")) {
             this.equipment = true;
             this.text = "On a successful attack, you give 1 point of extra damage.";
             this.damageAmount = 1;
-        }
+        }*/
         else if (name.equals("Diabolic Ritual")) {
             this.singleUse = true;
             this.text = "If you are a SHADOW, you may reveal your identity. If you do, your damage points are reset to 0.";
@@ -33,7 +33,7 @@ public class BlackCard extends Card {
             this.eligibleTargetTeams.add("SHADOW");
             this.fullHeal = true;
         }
-        else if (name.equals("Dynamite")) {
+        /*else if (name.equals("Dynamite")) {
             this.singleUse = true;
             this.text = "Roll both the dice and give 3 points of damage to all characters in the location designated by the total number rolled. (Nothing happens if a 7 is rolled)";
         }
@@ -52,7 +52,7 @@ public class BlackCard extends Card {
         else if (name.equals("Moody Goblin")) {
             this.singleUse = true;
             this.text = "You steal an equipment card from any character.";
-        }
+        }*/
         else if (name.equals("Spiritual Doll")) {
             this.singleUse = true;
             this.text = "Pick any character and roll a 6-sided die. If the die number is 1 to 4, you give 3 points of damage to that character. If the die number is 5 or 6, you get 3 points of damage.";

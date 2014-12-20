@@ -23,11 +23,11 @@ public class WhiteCard extends Card{
             this.revealIdentity = true;
             this.fullHeal = true;
         }
-        else if(name.equals("Concealed Knowledge")) {
+        /*else if(name.equals("Concealed Knowledge")) {
             this.singleUse = true;
             this.text = "Once this turn is over, you will take another turn.";
             this.extraTurn = true;
-        }
+        }*/
         else if(name.equals("Disenchant Mirror")) {
             this.singleUse = true;
             this.text = "If your character's name begins with V or W, you must reveal your identity.";
@@ -42,7 +42,7 @@ public class WhiteCard extends Card{
             this.text = "All characters except yourself receive 2 points of damage.";
             this.damageAmount = 2;
         }
-        else if(name.equals("Fortune Brooch")) {
+        /*else if(name.equals("Fortune Brooch")) {
             this.equipment = true;
             this.text = "You receive no damage from the Weird Woods.";
         }
@@ -53,13 +53,13 @@ public class WhiteCard extends Card{
         else if(name.equals("Holy Robe")) {
             this.equipment = true;
             this.text = "Your attacks do 1 less point of damage and the amount of damage you receive from attacks is reduced by 1.";
-        }
+        }*/
         else if(name.equals("Holy Water of Healing")) {
             this.singleUse = true;
             this.text = "Heal 2 points of your damage.";
             this.healAmount = 2;
         }
-        else if(name.equals("Mystic Compass")) {
+        /*else if(name.equals("Mystic Compass")) {
             this.equipment = true;
             this.text = "You may roll twice to move and choose which result to use.";
         }
@@ -76,6 +76,6 @@ public class WhiteCard extends Card{
         else if(name.equals("Talisman")) {
             this.equipment = true;
             this.text = "You receive no damage from the BLACK cards 'Bloodthirsty Spider', 'Vampire Bat' and 'Dynamite'.";
-        }
+        }*/
     }
 }
